@@ -45,7 +45,7 @@
       background: #ffcccc;
     }
 
-    /* C와 Enter는 마지막 줄에 배치 */
+    /* C + Enter 마지막 줄 */
     .wide-row {
       grid-column: span 3;
       display: grid;
@@ -79,8 +79,8 @@
 <body>
 
 <h2>160씩 그룹화</h2>
-<p>숫자를 쉼표(,)로 구분하여 입력하세요:</p>
-<input type="text" id="numbers" placeholder="예: 50,100,40,150,100">
+<p>숫자를 띄어쓰기로 구분하여 입력하세요:</p>
+<input type="text" id="numbers" placeholder="예: 50 100 40 150 100">
 
 <!-- 🔢 숫자 키패드 -->
 <div class="numpad">
@@ -93,7 +93,10 @@
   <div class="num-key">7</div>
   <div class="num-key">8</div>
   <div class="num-key">9</div>
-  <div class="num-key">,</div>
+
+  <!-- 🔵 Space 버튼 -->
+  <div class="num-key" id="spaceKey">Space</div>
+
   <div class="num-key">0</div>
   <div class="num-key delete-key">⌫</div>
 
@@ -114,7 +117,7 @@ inputField.addEventListener('keydown', function(event) {
   if (event.key === 'Enter') groupNumbers();
 });
 
-/* 🔢 숫자 키패드 입력 처리 */
+/* 🔢 키패드 입력 처리 */
 document.querySelectorAll('.num-key').forEach(key => {
   key.addEventListener('click', () => {
     let value = key.textContent;
@@ -131,6 +134,10 @@ document.querySelectorAll('.num-key').forEach(key => {
       groupNumbers();
       return;
     }
+    if (value === 'Space') {
+      inputField.value += " ";
+      return;
+    }
     inputField.value += value;
   });
 });
@@ -142,7 +149,8 @@ function groupNumbers() {
     return;
   }
 
-  let nums = input.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
+  /* 공백 기준 분리 */
+  let nums = input.split(/\s+/).map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
   if (nums.length === 0) {
     document.getElementById('output').innerHTML = "<p>유효한 숫자가 없습니다!</p>";
     return;
@@ -187,7 +195,7 @@ function groupNumbers() {
 
   groups.forEach(g => {
     let sum = g.reduce((a,b)=>a+b,0);
-    html += `<tr><td>${sum}</td><td>${g.join(", ")}</td></tr>`;
+    html += `<tr><td>${sum}</td><td>${g.join(" ")}</td></tr>`;
   });
 
   errorNums.forEach(n => {
