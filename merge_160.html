@@ -21,13 +21,38 @@
       margin-bottom: 12px;
       box-sizing: border-box;
     }
-    button {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      margin-top: 10px;
-      cursor: pointer;
+
+    /* 숫자 키패드 스타일 */
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 15px;
     }
+    .num-key {
+      padding: 18px;
+      font-size: 20px;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .num-key:active {
+      background: #ddd;
+    }
+    .delete-key {
+      background: #ffcccc;
+    }
+
+    /* C와 Enter는 마지막 줄에 배치 */
+    .wide-row {
+      grid-column: span 3;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -49,22 +74,65 @@
     th {
       background-color: #f2f2f2;
     }
-    p { font-size: 16px; }
   </style>
 </head>
 <body>
 
 <h2>160씩 그룹화</h2>
 <p>숫자를 쉼표(,)로 구분하여 입력하세요:</p>
-<input type="text" id="numbers" placeholder="예: 50,100,40,150,100,140,200">
-<button onclick="groupNumbers()">그룹화 실행</button>
+<input type="text" id="numbers" placeholder="예: 50,100,40,150,100">
+
+<!-- 🔢 숫자 키패드 -->
+<div class="numpad">
+  <div class="num-key">1</div>
+  <div class="num-key">2</div>
+  <div class="num-key">3</div>
+  <div class="num-key">4</div>
+  <div class="num-key">5</div>
+  <div class="num-key">6</div>
+  <div class="num-key">7</div>
+  <div class="num-key">8</div>
+  <div class="num-key">9</div>
+  <div class="num-key">,</div>
+  <div class="num-key">0</div>
+  <div class="num-key delete-key">⌫</div>
+
+  <!-- 🔵 C + Enter 한 줄 -->
+  <div class="wide-row">
+    <div class="num-key" id="clearKey">C</div>
+    <div class="num-key" id="enterKey">Enter</div>
+  </div>
+</div>
 
 <div id="output"></div>
 
 <script>
 const inputField = document.getElementById('numbers');
+
+/* 키보드 Enter → 실행 */
 inputField.addEventListener('keydown', function(event) {
   if (event.key === 'Enter') groupNumbers();
+});
+
+/* 🔢 숫자 키패드 입력 처리 */
+document.querySelectorAll('.num-key').forEach(key => {
+  key.addEventListener('click', () => {
+    let value = key.textContent;
+
+    if (value === '⌫') {
+      inputField.value = inputField.value.slice(0, -1);
+      return;
+    }
+    if (value === 'C') {
+      inputField.value = "";
+      return;
+    }
+    if (value === 'Enter') {
+      groupNumbers();
+      return;
+    }
+    inputField.value += value;
+  });
 });
 
 function groupNumbers() {
@@ -85,7 +153,6 @@ function groupNumbers() {
 
   let groups = [];
 
-  // 최대합 부분집합 함수
   function maxSubset(arr, target) {
     let best = [];
     let bestSum = 0;
@@ -107,11 +174,13 @@ function groupNumbers() {
   while (validNums.length > 0) {
     let group = maxSubset(validNums, 160);
     groups.push(group);
-    // 사용한 숫자 제거
-    validNums = validNums.filter(n => !group.includes(n));
+
+    group.forEach(num => {
+      let idx = validNums.indexOf(num);
+      if (idx !== -1) validNums.splice(idx, 1);
+    });
   }
 
-  // 테이블 생성
   let html = '<div class="table-wrapper">';
   html += '<table>';
   html += '<tr><th>합계</th><th>숫자 그룹</th></tr>';
