@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>숫자 그룹화</title>
+  <meta name="viewport" content="width=device-width, initial‑scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 10px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 300px;
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    p {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>숫자 그룹화</h2>
+  <p>숫자를 쉼표(,)로 구분하여 입력하세요:</p>
+  <input type="text" id="numbers" placeholder="예: 50,100,40,150,100,140,200">
+  <button onclick="groupNumbers()">그룹화 실행</button>
+
+  <div id="output"></div>
+
+  <script>
+    const inputField = document.getElementById('numbers');
+    inputField.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        groupNumbers();
+      }
+    });
+
+    function groupNumbers() {
+      let input = inputField.value.trim();
+      if (!input) {
+        document.getElementById('output').innerHTML = "<p>숫자를 입력해주세요!</p>";
+        return;
+      }
+
+      let nums = input
+        .split(',')
+        .map(n => parseFloat(n.trim()))
+        .filter(n => !isNaN(n));
+
+      if (nums.length === 0) {
+        document.getElementById('output').innerHTML = "<p>유효한 숫자가 없습니다!</p>";
+        return;
+      }
+
+      let errorNums = nums.filter(n => n > 160);
+      let validNums = nums.filter(n => n <= 160);
+
+      validNums.sort((a, b) => b - a);
+      let used = Array(validNums.length).fill(false);
+      let groups = [];
+
+      for (let i = 0; i < validNums.length; i++) {
+        if (!used[i]) {
+          let groupItems = [validNums[i]];
+          let sumGroup = validNums[i];
+          used[i] = true;
+
+          for (let j = i + 1; j < validNums.length; j++) {
+            if (!used[j] && sumGroup + validNums[j] <= 160) {
+              sumGroup += validNums[j];
+              groupItems.push(validNums[j]);
+              used[j] = true;
+            }
+          }
+
+          groups.push({ items: groupItems, sum: sumGroup });
+        }
+      }
+
+      groups.sort((a, b) => b.sum - a.sum);
+
+      // 테이블 HTML 생성
+      let html = '<div class="table-wrapper">';
+      html += '<table>';
+      html += '<tr><th>합계</th><th>숫자 그룹</th></tr>';
+      for (let g of groups) {
+        html += `<tr><td>${g.sum}</td><td>${g.items.join(", ")}</td></tr>`;
+      }
+      for (let n of errorNums) {
+        html += `<tr><td>입력오류</td><td>${n}</td></tr>`;
+      }
+      html += '</table></div>';
+
+      document.getElementById('output').innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>
